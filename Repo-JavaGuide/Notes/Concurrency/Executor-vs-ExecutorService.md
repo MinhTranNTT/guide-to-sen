@@ -122,7 +122,27 @@ List<Runnable> shutdownNow()
 
 
 
+## References:
 
+[blog/java并发.md at 2dec5a881bdc44c19b5a5a19d9e02de49349d94f · dackh/blog (github.com)](https://github.com/dackh/blog/blob/2dec5a881bdc44c19b5a5a19d9e02de49349d94f/java并发.md)
+
+[JavaMadeSoEasy.com (JMSE): Differences between execute() and submit() method of executor framework in java](https://www.javamadesoeasy.com/2015/03/differences-between-execute-and-submit.html)
+
+[JavaMadeSoEasy.com (JMSE): Executor and ExecutorService framework in java - Detailed explanation with full program](https://www.javamadesoeasy.com/2015/03/executor-and-executorservice-framework.html)
+
+[Java ExecutorService (jenkov.com)](https://jenkov.com/tutorials/java-util-concurrent/executorservice.html)
+
+[Java Executor interface (java2s.com)](http://www.java2s.com/ref/java/java-executor-interface.html)
+
+[A Guide to the Java ExecutorService | Baeldung](https://www.baeldung.com/java-executor-service-tutorial)
+
+[Executor vs ExecutorService in Java (javaguides.net)](https://www.javaguides.net/2023/11/executor-vs-executorservice-in-java.html#:~:text=Key Points-,1.,one or more asynchronous tasks.)
+
+[java - what's the difference between Executor and ExecutorService? - Stack Overflow](https://stackoverflow.com/questions/15052317/whats-the-difference-between-executor-and-executorservice)
+
+[Difference between Executor, ExecutorService and Executers class in Java (javarevisited.blogspot.com)](https://javarevisited.blogspot.com/2017/02/difference-between-executor-executorservice-and-executors-in-java.html)
+
+[Executor 与 ExecutorService 和 Executors 傻傻分不清_executorservice executors-CSDN博客](https://blog.csdn.net/moakun/article/details/88627660)
 
 
 
