@@ -120,6 +120,105 @@ List<Runnable> shutdownNow()
 - nhiệm vụ đang chờ sẽ không được thực thi
 - phương thức trả về một danh sách các tác vụ đang chờ thực thi trong java
 
+```java
+boolean isTerminated()
+```
+
+Trả về True nếu tất cả các tác vụ đã hoàn thành sau khi tắt trong java.
+
+```java
+<T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks) throws InterruptedException
+```
+
+> Phương thức `invokeAll()` của `ExecutorService` trong Java được sử dụng để thực thi một tập hợp các `Callable` và chờ đợi cho đến khi tất cả các `Callable` đã được thực thi và trả về kết quả.
+>
+> **Cách hoạt động:**
+>
+> - Phương thức `invokeAll()` nhận vào một danh sách các `Callable` và trả về một danh sách các đối tượng `Future`. Mỗi `Future` đại diện cho kết quả của một `Callable` tương ứng.
+> - Khi bạn gọi `invokeAll()`, `ExecutorService` sẽ bắt đầu thực thi tất cả các `Callable` trong danh sách.
+> - Phương thức này sẽ chờ đợi cho đến khi tất cả các `Callable` đã được thực thi xong hoặc cho đến khi hết thời gian chờ được chỉ định (nếu có).
+> - Khi tất cả các `Callable` đã hoàn thành, danh sách các `Future` chứa kết quả của từng `Callable` sẽ được trả về.
+>
+> **Tham số:**
+>
+> - `callables`: Danh sách các `Callable` mà bạn muốn thực thi.
+> - `timeout`: Thời gian tối đa để chờ đợi kết quả của tất cả các `Callable`. Nếu `null`, phương thức sẽ chờ đợi vô hạn.
+>
+> **Trả về:**
+>
+> - Một danh sách các đối tượng `Future`, mỗi đối tượng `Future` đại diện cho kết quả của một `Callable`.
+>
+> **Ví dụ:**
+>
+> ```
+> javaCopy codeList<Callable<String>> callables = Arrays.asList(
+>     () -> "Task 1",
+>     () -> "Task 2",
+>     () -> "Task 3");
+> 
+> ExecutorService executorService = Executors.newFixedThreadPool(3);
+> List<Future<String>> futures = executorService.invokeAll(callables);
+> 
+> for (Future<String> future : futures) {
+>     try {
+>         System.out.println(future.get()); // Lấy kết quả từ mỗi Future
+>     } catch (InterruptedException | ExecutionException e) {
+>         e.printStackTrace();
+>     }
+> }
+> 
+> executorService.shutdown();
+> ```
+>
+> Trong ví dụ này, `invokeAll()` sẽ thực thi tất cả các `Callable` trong danh sách `callables` và chờ đợi cho đến khi tất cả các `Callable` hoàn thành. Sau đó, chúng ta lặp qua danh sách `Future` và lấy kết quả của mỗi `Callable` bằng cách sử dụng phương thức `get()` của `Future`.
+
+Difference between Fixed and Cached Thread pool in Java Executor Famework?
+
+Có 2 loại nhóm luồng được cung cấp bởi Executor Framework: 
+
+- một là nhóm luồng cố định (fixed), bắt đầu với số lượng Thread cố định.
+  - Executors.newFixedThreadPool được sử dụng để khởi tạo một nhóm Thread có kích thước cố định. Nếu số lượng tác vụ vượt hơn số lượng Thread được khởi tạo trong pool, thì các tác vụ còn lại sẽ được đưa vào hàng đợi và sẽ được thực thi tiếp tục ngay khi tác vụ bất kỳ hoàn thành.
+- loại còn lại là nhóm luồng (Thread) được lưu trữ trong bộ nhớ đệm, để tạo ra thêm nhiều Thread hơn nếu số lượng Thread ban đầu đáp ứng thực thi. 
+  - Executors.newCachedThreadPool được sử dụng để tạo nhóm Thread được lưu trữ trong bộ nhớ đệm. Nhóm Thread sẽ thực thi ngay khi nhận được tác vụ cần xử lý, nếu nhóm Thread không đủ  để đáp ứng tác vụ thì các Thread mới sẽ được tạo ra để đáp ứng thực thi tác vụ. 
+
+> 1. Khi tác vụ được gửi đi, sẽ được thực thi ngay lập tức trong nhóm Thread được lưu trữ trong bộ nhớ đệm. Nhưng tác vụ đó có thể được đặt trong hàng đợi nếu không có Thread nào trống trong trường hợp khởi tạo với nhóm Thread cố định. Điều này có nghĩa, nếu bạn muốn đảm bảo thực thi ngay lập tức thì sử dụng khởi tạo nhóm Thread được lưu trữ trong bộ nhớ cache là lựa chọn tốt hơn, nhưng nếu bạn bị hạn chế về tài nguyên và muốn sử dụng số lượng Thread cố định thì khởi tạo với nhóm Thread cố định là lựa chọn tốt hơn.
+> 2. Syntax Executors.newFixedThreadPool vs Executors.newCachedThreadPool, 2 cách khai báo bên trên là các phương thức khởi tạo một nhóm Thread. Là một phần của Java Concurrency API.
+> 3. nhóm Thread được lưu trong bộ nhớ đệm có thể tạo thêm Thread nếu cần nhưng không có Thread bổ sung nào có thể được khởi tạo thêm trong nhóm Thread cố định. Điều này có ý nghĩa là nhóm Thread được lưu trữ trong bộ nhớ cache là lựa chọn tốt hơn nếu bạn có tài nguyên vì nó có thể tạo và tăng số lượng Thread để thực thi tác vụ, nhưng nhóm Thread cố định sẽ là lựa chọn tốt hơn nếu môi trường hạn chế về tài nguyên. 
+
+![](D:\MinhTran-Miscellenous\Repo-JavaGuide\Notes\Concurrency\imgs\Fixed-Thread-Pool.png)
+
+![](D:\MinhTran-Miscellenous\Repo-JavaGuide\Notes\Concurrency\imgs\Cached-Thread-Pool.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ## References:
@@ -144,7 +243,7 @@ List<Runnable> shutdownNow()
 
 [Executor 与 ExecutorService 和 Executors 傻傻分不清_executorservice executors-CSDN博客](https://blog.csdn.net/moakun/article/details/88627660)
 
-
+[Difference between Fixed and Cached Thread pool in Java Executor Famework | Java67](https://www.java67.com/2022/05/difference-between-fixed-and-cached-thread-pool.html)
 
 
 
