@@ -189,7 +189,7 @@ Có 2 loại nhóm luồng được cung cấp bởi Executor Framework:
 
 ![](D:\MinhTran-Miscellenous\Repo-JavaGuide\Notes\Concurrency\imgs\Cached-Thread-Pool.png)
 
-
+.
 
 
 
