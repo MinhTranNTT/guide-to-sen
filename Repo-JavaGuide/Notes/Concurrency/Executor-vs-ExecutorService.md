@@ -189,6 +189,7 @@ Có 2 loại nhóm luồng được cung cấp bởi Executor Framework:
 
 ![](D:\MinhTran-Miscellenous\Repo-JavaGuide\Notes\Concurrency\imgs\Cached-Thread-Pool.png)
 
+<<<<<<< HEAD
 ---
 
 ```java
@@ -252,6 +253,9 @@ Future là một giao diện cung cấp các phương thức với mục đích 
 
 ### 5. java.util.concurrent.Callable<V> in java
 
+=======
+.
+>>>>>>> 82458cd97c6c8a06aed595b617fa4553ba25616f
 
 
 
