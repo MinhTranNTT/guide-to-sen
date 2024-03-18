@@ -74,37 +74,6 @@ Các yếu tố chính: tổng số chỗ của bãi đậu xe, khi một xe và
 ```java
 public class CarParking {
     private static Semaphore semaphore = new Semaphore(2);
-
-    public static void main1(String[] args){
-
-        /*for(int i = 1;i<= 5;i++){
-
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    System.out.println("welcome " + Thread.currentThread().getName() + " Arrive at the parking lot");
-                    // Determine whether parking is allowed
-                    if(semaphore.availablePermits() == 0) {
-                        System.out.println("Insufficient parking spaces, please wait patiently");
-                    }
-                    try {
-                        // try to get
-                        semaphore.acquire();
-                        System.out.println(Thread.currentThread().getName() + " >> Enter << the parking lot");
-                        // Thread.sleep(new Random().nextInt(10000));// Simulate the time a vehicle spends in a parking lot
-                        Thread.sleep(1000);
-                        System.out.println(Thread.currentThread().getName() + " --- Exit --- the parking lot");
-                        semaphore.release();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }, i + " car number");
-
-            thread.start();
-        }*/
-    }
-
     public static void main(String[] args) {
         ExecutorService executor = Executors.newFixedThreadPool(4);
         for (int i = 1; i <= 5; i++) {
@@ -144,3 +113,32 @@ class MySemaphore implements Runnable {
 }
 ```
 
+phương thức acquire() có 2 dạng 
+
+```java
+public void acquire() throws InterruptedException;
+public void acquire(int permits) throws InterruptedException;
+```
+
+void acquire() có được giấy phép nếu có và giảm số lượng giấy phép có sẳn (-1), nếu ko có giấy phép thì Thread hiện tại sẽ ko hoạt động cho đến khi
+
+- một Thread khác gọi method release() trên semaphore này
+- một Thread khác làm gián đoạn Thread hiện tại
+
+void acquire(int permits) đạt được số lượng giấy phép nếu có và giảm số lượng giấy phép có sẳn với (permits giấy phép), nếu số lượng giấy phép ko có sẳn thì Thread sẽ dừng chờ cho đến khi một trong những điều sau xảy ra.
+
+- một số Thread khác gọi phương thức release() trên semaphore này và các giấy phép có sẳn lớn hơn hoặc bằng số lượng giấy phép cần.
+- Một số Thread khác làm gián đoạn Thread hiện tại.
+
+ ```java
+ public void release();
+ public void release(int permits);
+ ```
+
+Phát hành giấy phép và tăng số lượng giấy phép lên 1 (+1).
+
+Phát hành giấy phép và tăng số lượng giấy phép lên permits lần (+permits).
+
+## 4. How can you implement Producer Consumer pattern using Semaphore in java?
+
+## 5. How can you implement your own Semaphore?
