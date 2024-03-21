@@ -224,12 +224,67 @@ Concurrency                 Concurrency + parallelism
 
 ![RRF1J](D:\MinhTran-Miscellenous\Repo-JavaGuide\Notes\Concurrency\imgs\RRF1J.gif)
 
+## 5. Luồng người dùng và luồng deamon
 
+User Thread
 
+Là thread mà hđh trực tiếp quản lý và có thể tương tác trực tiếp với người dùng thông qua các tiến trình (process)
 
+Mỗi User Thread hoạt động độc lập với các Thread khác trong ứng dụng, nhưng chúng có thể chia sẻ chung các tài nguyên bộ nhớ và tài nguyên hệ thống. 
 
+Deamon Thread:
 
+là một loại Thread đặc biệt ko phụ thuộc vào hoạt động của người dùng và thường chạy trong nền (background) của hệ thống mà ko yêu cầu sự tương tác từ phía người dùng.
 
+> Dưới đây là một số ví dụ cụ thể về việc sử dụng luồng người dùng và luồng daemon trong các ứng dụng và hệ thống thực tế:
+>
+> 1. **Luồng Người Dùng:**
+>    - Trong một ứng dụng đồng bộ hóa dữ liệu từ nhiều nguồn (ví dụ: ứng dụng gửi và nhận tin nhắn), mỗi kết nối có thể được quản lý bằng một luồng người dùng riêng biệt. Điều này giúp ứng dụng không bị chặn khi một kết nối đang chờ đợi dữ liệu.
+>    - Trong trò chơi trực tuyến, mỗi người chơi có thể được xử lý trong một luồng người dùng riêng, giúp tối ưu hóa hiệu suất và tránh tình trạng lag cho người chơi.
+> 2. **Luồng Daemon:**
+>    - Một dịch vụ web server như Apache hoặc Nginx chạy như một luồng daemon để phục vụ các yêu cầu HTTP từ các máy khách mà không cần sự can thiệp của người dùng.
+>    - Hệ thống quản lý gói như apt (trên Ubuntu) hoặc yum (trên CentOS) có thể chạy như các luồng daemon, tự động kiểm tra và tải xuống các gói cập nhật mới từ các kho lưu trữ mà không cần sự tương tác của người dùng.
+>
+> Những ví dụ này chỉ ra rằng luồng người dùng thường được sử dụng trong các tác vụ đòi hỏi tương tác với người dùng hoặc đòi hỏi đồng bộ hóa, trong khi luồng daemon thường được sử dụng để thực hiện các tác vụ tự động trong nền mà không cần sự can thiệp của người dùng.
 
+```java
+public static void main2(String[] args) {
+   Thread thread = new Thread(() -> {
+       System.out.println("not setting deamon thread");
+       while (true) {
+
+       }
+   });
+   thread.start();
+   System.out.println("DONE");
+}
+
+public static void main(String[] args) {
+    Thread thread = new Thread(() -> {
+        System.out.println("setting is deamon thread");
+        while (true) {
+
+        }
+    });
+    thread.setDaemon(true);
+    thread.start();
+    System.out.println("DONE");
+}
+```
+
+> Đoạn mã bạn cung cấp định nghĩa hai phương thức main2 và main. Cả hai đều tạo ra một luồng mới và in ra một thông điệp sau đó vô hạn lặp. Tuy nhiên, sự khác biệt chính đến từ cách xử lý luồng đa nhiệm:
+>
+> 1. **Phương thức main2:**
+>    - Trong phương thức này, một luồng mới được tạo ra và khởi chạy, nhưng không được đặt là luồng daemon (daemon thread). Điều này có nghĩa là khi chương trình chính (main thread) kết thúc, luồng mới tạo này vẫn tiếp tục chạy, không giữa kết thúc chương trình.
+>    - Đoạn mã này sẽ in ra "DONE" ngay sau khi luồng mới được khởi chạy, sau đó chương trình kết thúc và luồng mới vẫn tiếp tục chạy vô hạn.
+> 2. **Phương thức main:**
+>    - Trong phương thức này, một luồng mới cũng được tạo ra và khởi chạy, nhưng lần này được đặt là luồng daemon bằng cách gọi phương thức setDaemon(true) trước khi bắt đầu luồng.
+>    - Khi chương trình chính kết thúc, các luồng daemon sẽ tự động kết thúc ngay lập tức mà không cần chờ các hoạt động hoặc luồng còn lại. Do đó, sau khi in ra "DONE", chương trình chính kết thúc, và luồng daemon cũng kết thúc ngay lập tức, không cần chờ đến khi các hoạt động khác hoàn thành.
+>
+> Tóm lại, sự khác biệt chính giữa hai phương thức này là trong cách xử lý luồng đa nhiệm: một là không đặt luồng là luồng daemon và một là đặt luồng là luồng daemon.
+
+(In vernacular: It is to guard the user thread. When the user thread dies, the guard thread will also die.)
+
+Hello, I am the MinhTran. I am a small seed on the road to Java learning. I also hope that one day it will take root and grow into a big tree.
 
 [Concurrency vs. Parallelism (jenkov.com)](https://jenkov.com/tutorials/java-concurrency/concurrency-vs-parallelism.html)
