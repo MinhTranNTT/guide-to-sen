@@ -266,3 +266,59 @@ public class LockDemo {
 }
 ```
 
+> Trong Java, `ReentrantLock` là một cơ chế đồng bộ hóa được sử dụng để bảo vệ các phần của mã khỏi sự cạnh tranh và đồng bộ hóa luồng. Hai phương thức chính trong `ReentrantLock` là `lock()` và `unlock()`, chúng là phương thức quan trọng để kiểm soát việc truy cập vào các phần tài nguyên được bảo vệ.
+>
+> 1. **lock()**: Phương thức `lock()` được sử dụng để yêu cầu khóa tài nguyên. Khi một luồng gọi `lock()` trên một `ReentrantLock`, nó sẽ yêu cầu khóa và chờ đến khi nó nhận được khóa. Nếu khóa đang được sử dụng bởi một luồng khác, luồng hiện tại sẽ bị chặn (hoặc đợi) cho đến khi khóa trở thành khả dụng. Một lưu ý quan trọng là `ReentrantLock` cho phép một luồng có thể gọi `lock()` nhiều lần mà không gặp lỗi. Nếu luồng đã có khóa, mỗi lần gọi `lock()` sẽ tăng một số lượng đếm và phải có một lượng tương đồng của `unlock()` để giảm đếm và giải phóng khóa. Điều này làm cho `ReentrantLock` trở thành một loại khóa có thể đệ quy.
+> 2. **unlock()**: Phương thức `unlock()` được sử dụng để giải phóng khóa tài nguyên. Khi một luồng gọi `unlock()` trên một `ReentrantLock`, nó sẽ giải phóng khóa và cho phép các luồng khác yêu cầu và sử dụng tài nguyên bảo vệ. Nếu đếm khóa đang là 0 sau khi gọi `unlock()`, tài nguyên sẽ được giải phóng và luồng khác có thể tiếp tục sử dụng nó. Tuy nhiên, nếu đếm khóa vẫn còn lớn hơn 0, khóa sẽ vẫn còn và chỉ giảm đếm. Chỉ khi đếm khóa đạt đến 0, tài nguyên mới được thực sự giải phóng.
+>
+> `ReentrantLock` cho phép luồng khóa và mở khóa một cách linh hoạt, cho phép kiểm soát chính xác hơn so với việc sử dụng `synchronized` truyền thống. Tuy nhiên, việc sử dụng `ReentrantLock` cần phải cẩn thận để tránh các vấn đề liên quan đến deadlock và khả năng luồng không bao giờ giải phóng khóa, gây ra vấn đề về hiệu suất.
+
+> Trong Java, `java.util.concurrent.locks.Condition` là một thành phần quan trọng của cơ chế đồng bộ hóa được cung cấp bởi gói `java.util.concurrent.locks`. `Condition` được sử dụng để quản lý thứ tự thực thi của các luồng, đặc biệt là trong mô hình Producer-Consumer hoặc trong các tình huống đồng bộ hóa phức tạp hơn.
+>
+> Dưới đây là các phương thức quan trọng của `Condition`:
+>
+> 1. **await()**: Phương thức `await()` được sử dụng để đặt luồng hiện tại vào trạng thái chờ (waiting) cho đến khi một điều kiện nhất định được đáp ứng. Khi gọi `await()`, luồng sẽ giải phóng khóa mà nó đang giữ và chờ đến khi một luồng khác gọi `signal()` hoặc `signalAll()` trên cùng một `Condition`. Luồng sẽ tiếp tục thực thi sau khi nó được thức tỉnh (wake-up) và tái lấy khóa.
+> 2. **awaitUninterruptibly()**: Tương tự như `await()`, nhưng không ảnh hưởng bởi các ngắt (interrupts). Khi gọi `awaitUninterruptibly()`, luồng sẽ chờ cho đến khi nó được thức tỉnh mà không quan tâm đến việc nó bị ngắt gián đoạn (interrupted).
+> 3. **await(long time, TimeUnit unit)**: Giống như `await()`, nhưng luồng sẽ chờ cho một khoảng thời gian cụ thể trước khi tiếp tục thực thi, sau đó nó sẽ tự động tiếp tục thực thi nếu không có sự thức tỉnh nào xảy ra trong khoảng thời gian đã chỉ định.
+> 4. **signal()**: Phương thức `signal()` được sử dụng để thức tỉnh một luồng đang chờ đợi trên `Condition`. Nó sẽ chọn một trong các luồng chờ (nếu có) và đánh thức nó để tiếp tục thực thi.
+> 5. **signalAll()**: Phương thức `signalAll()` cũng thức tỉnh tất cả các luồng đang chờ trên `Condition`. Tất cả các luồng đang chờ sẽ được thức tỉnh và có cơ hội tiếp tục thực thi.
+> 6. **awaitNanos(long nanosTimeout)**: Giống như `await(long time, TimeUnit unit)`, nhưng thời gian chờ là trong đơn vị nanos (nanoseconds).
+>
+> Các phương thức này cung cấp một cơ chế mạnh mẽ cho việc đồng bộ hóa luồng và quản lý thứ tự thực thi trong các ứng dụng đa luồng. Đặc biệt là trong các tình huống phức tạp như Producer-Consumer, sử dụng `Condition` có thể giúp tối ưu hóa hiệu suất và tránh tình trạng đơ (deadlock) hoặc tình trạng cạnh tranh (race condition).
+
+ReentrantLock có nghĩa là khoá đăng nhập lại. Là Class duy nhất triển khai giao diện Lock, và ReentrantLock cung cấp nhiều phương thức hơn. là một Thread đã có được khoá và có thể lấy lại khoá mà không bị bế tắc.
+
+## 7. Một giải thích khác về ReentrantLock
+
+ReentrantLock được dịch là khoá Reentrant, có nghĩa là 1 Thread có thể liên tục khoá các tài nguyên được chia sẻ trong các phần quan trọng.
+
+Cách phổ biến nhất để đảm bảo an toàn cho Thread là sử dụng các cơ chế (Lock, Synchronized) để thực hiện đồng bộ hoá đảm bảo an toàn cho tài nguyên được chia sẻ. Bằng cách này chỉ một Thread có thể thực thi một phương thức nhất định hoặc khối mã nhất định cùng một lúc và hoạt động phải đảm bảo tính nguyên tử, an toàn theo luồng.
+
+Vì sao keyword `Synchronized` trong JDK cũng có thể hỗ trợ tính nguyên tử và an toàn luồng, thì tại sao chúng ta cần ReentrantLock sau khi đã có từ khoá `Synchronized`?
+
+|                          | **Synchronized**                                             | **ReentrantLock**                                            |
+| ------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| Cơ chế                   | Synchronized sử dụng cơ chế Monitor Lock trong java, mà mỗi đối tượng trong java có một Monitor Lock đi kèm với nó | ReentrantLock sử dụng cơ chế AbstractQueuedSynchronizer (AQS) để triển khai khoá, cung cấp linh hoạt hơn trong việc quản lý khoá và điều khiển luồng. |
+| Tính linh hoạt           | tính linh hoạt thấp, vì nó chỉ có thể đồng bộ hoá trên phương thức hoặc khối mã | cung cấp tính linh hoạt cao hơn với khả năng thực hiện các thao tác như đợi với thời gian chờ, hỗ trợ cho việc thức tính các luồng, và kiểm soát độ ưu tiên của các luồng. |
+| Hình thức nhả khoá       | synchronized không hỗ trợ tính năng như phản ứng với ngắt, thời gian chờ, hoặc thử nghiệm để lấy khóa => nhả khoá tự động | ReentrantLock hỗ trợ các tính năng này như phản ứng với ngắt (interrupt), thời gian chờ (tryLock(long time, TimeUnit unit)), và thử nghiệm để lấy khóa (tryLock()). |
+| Loại khoá được hỗ trợ    | synchronized chỉ hỗ trợ khóa không công bằng (non-fair lock). | ReentrantLock hỗ trợ cả loại khóa không công bằng và loại khóa công bằng (fair lock). |
+| Hỗ trợ có điều kiện      | synchronized không có hỗ trợ cho việc tạo điều kiện và quản lý điều kiện. | ReentrantLock cung cấp phương thức newCondition() để tạo ra điều kiện và quản lý chúng. |
+| Hỗ trợ khả năng tái nhập | `synchronized` và `ReentrantLock` đều hỗ trợ khả năng tái nhập, tức là một luồng có thể thực hiện lại việc giữ khóa mà nó đã giữ trước đó. | `synchronized` và `ReentrantLock` đều hỗ trợ khả năng tái nhập, tức là một luồng có thể thực hiện lại việc giữ khóa mà nó đã giữ trước đó. |
+
+## 8. AQS là gì
+
+AQS (AbstractQueuedSynchronizer) là một khung trừu tượng được sử dụng để xây dựng các đồng bộ hóa và khóa trong Java. Bằng cách kế thừa AQS, bạn có thể dễ dàng triển khai các đồng bộ hóa tùy chỉnh và các khóa để quản lý đa luồng. Dưới đây là một số điểm quan trọng về AQS:
+
+1. **Mô hình**: AQS xây dựng trên một mô hình đồng bộ hóa hàng đợi trừu tượng. Nó sử dụng một danh sách hàng đợi (queue) của các luồng đang chờ để có thể thực hiện đồng bộ hóa một cách an toàn và hiệu quả.
+2. **Cơ chế hoạt động**: AQS quản lý các luồng thông qua hai loại cơ chế: state (trạng thái) và queue (hàng đợi). Trạng thái đại diện cho trạng thái của tài nguyên được bảo vệ và có thể được thay đổi bởi các phương thức đồng bộ hóa. Hàng đợi chứa các luồng đang chờ để thực hiện các hành động liên quan đến tài nguyên.
+3. **Triển khai**: Bạn có thể triển khai các lớp con của AQS để tạo ra các đồng bộ hóa tùy chỉnh hoặc các khóa tùy chỉnh. Bằng cách override các phương thức được cung cấp bởi AQS như `tryAcquire()`, `tryRelease()`, `tryAcquireShared()`, và `tryReleaseShared()`, bạn có thể điều khiển cách các luồng có thể truy cập vào tài nguyên.
+4. **Hiệu suất**: AQS cung cấp một cơ chế đồng bộ hóa hiệu quả với overhead thấp, cho phép nhiều luồng đợi mà không gây ra quá nhiều tài nguyên hệ thống.
+5. **Hỗ trợ cho Locks và Conditions**: AQS là cơ sở cho các khóa như ReentrantLock và các điều kiện như Condition trong Java. Các lớp này triển khai các phương thức cụ thể của AQS để cung cấp các tính năng như khả năng tái nhập, hỗ trợ cho điều kiện, và các tính năng khác.
+
+Nhờ vào khả năng linh hoạt và hiệu suất của nó, AQS là một công cụ mạnh mẽ cho việc xây dựng các cơ chế đồng bộ hóa tùy chỉnh trong Java, cho phép bạn tạo ra các ứng dụng đa luồng an toàn và hiệu quả.
+
+Như được hiển thị trong hình, các khóa và bộ đồng bộ hóa có liên quan trong gói java.util.concurrent (các gói thường được sử dụng bao gồm ReentrantLock, ReadWriteLock, CountDownLatch...) đều được triển khai dựa trên AQS
+
+![](D:\MinhTran-Miscellenous\Repo-JavaGuide\Notes\Concurrency\imgs\615d8fa2b2104dfdab89c61892a40152~tplv-k3u1fbpfcp-zoom-in-crop-mark_1512_0_0_0.webp)
+
+AQS là một mẫu thiết kế phương thức mẫu điển hình. Lớp cha (AQS) xác định khung và các chi tiết hoạt động nội bộ, đồng thời các quy tắc cụ thể được các lớp con triển khai.
