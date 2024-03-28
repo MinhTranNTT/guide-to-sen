@@ -322,3 +322,161 @@ Như được hiển thị trong hình, các khóa và bộ đồng bộ hóa c�
 ![](D:\MinhTran-Miscellenous\Repo-JavaGuide\Notes\Concurrency\imgs\615d8fa2b2104dfdab89c61892a40152~tplv-k3u1fbpfcp-zoom-in-crop-mark_1512_0_0_0.webp)
 
 AQS là một mẫu thiết kế phương thức mẫu điển hình. Lớp cha (AQS) xác định khung và các chi tiết hoạt động nội bộ, đồng thời các quy tắc cụ thể được các lớp con triển khai.
+
+---
+
+*AQS AbstractQueuedSynchronizer là một khung trừ tượng, được sử dụng để xây dựng các đồng bộ hoá và khoá trong java.
+
+1. Khởi tạo và cập nhật trạng thái
+
+Khi một Luồng yêu cầu quyền truy cập vào 1 tài nguyên được đồng bộ hoá, AQS sẽ kiểm tra trạng thái của tài nguyên đó.
+
+Nếu tài nguyên đang không được sử dụng (trạng thái là không khoá) Luồng hiện tại sẽ được gán làm Luồng chủ (owner Thread)  của tài nguyên và trạng thái của tài nguyên được cập nhật để đánh dấu là đã khoá.
+
+trạng thái của tài nguyên được lưu trữ trong một biến thành viên `State` có kiểu dữ liệu là `int` được đánh dấu bằng từ khoá `volatile` để đảm bảo tính nhất quán và hiệu suất khi sử dụng trong môi trường đa luồng.
+
+Sự thay đổi trạng thái của tài nguyên `State` được thực hiện thông qua các phép toán atomic như CAS (compare-and-swap) để đảm bảo tính toàn vẹn và sử lý đa luồng an toàn.
+
+2. Cơ chế chờ và thức tỉnh (blocking and awaking merchanism)
+
+nếu tài nguyên đã bị khoá bởi 1 luồng khác, luồng yêu cầu truy cập mới sẽ được đưa vào hàng đợi (waiting queue) của AQS.
+
+AQS sử một biến thể của hàng đợi CLH (craig, landin, hagersten) để quản lý các luồng đang chờ quyền truy cập tài nguyên.
+
+khi tài nguyên trở thành khả dụng (khoá đã được giải phóng), luồng đầu tiên trong hàng đợi queue của AQS sẽ được thức tỉnh (awaken) và cố gắng lấy khoá để thực hiện xử lý.
+
+Tóm lại AQS hoạt động bằng cách sử dụng trạng thái của tài nguyên (State) và một cơ chế hàng đợi CLH để quản lý việc truy cập vào tài nguyên được đồng bộ hoá. Đảm bảo sự an toàn và tính nhất quán trong môi trường đa luồng. 
+
+![](D:\MinhTran-Miscellenous\Repo-JavaGuide\Notes\Concurrency\imgs\1ebefeb23a184f2a9b515bf01eb430da~tplv-k3u1fbpfcp-zoom-in-crop-mark_1512_0_0_0.webp)
+
+> Hình ảnh này minh họa cấu trúc và luồng của các luồng trong **AQS (AbstractQueuedSynchronizer)**. Dưới đây là mô tả chi tiết:
+>
+> 1. **AQS (AbstractQueuedSynchronizer)**:
+>    - Là một cơ chế đồng bộ hóa trong Java, được sử dụng để quản lý trạng thái và luồng của các tài nguyên chia sẻ.
+>    - Sử dụng hàng đợi CLH (Craig, Landin, and Hagersten) để duyệt qua các luồng đang chờ tài nguyên.
+>    - Bao gồm các trạng thái như “không khóa”, “đang chờ”, “đã khóa” và “đã hủy”.
+> 2. **CLH Queue (Craig, Landin, and Hagersten)**:
+>    - Là một hàng đợi dựa trên danh sách liên kết đơn, được sử dụng để quản lý các luồng đang chờ tài nguyên.
+>    - Các luồng được tự động thêm vào cuối hàng đợi khi chúng yêu cầu tài nguyên.
+>    - Luồng chủ sở hữu độc quyền được xác định bởi trường “owner” trong nút CLH.
+> 3. **Luồng (Thread) và Trạng thái**:
+>    - Hình ảnh hiển thị các luồng (thread) được biểu diễn bằng các hình tròn.
+>    - Mỗi luồng có trạng thái như “không khóa”, “đang chờ”, “đã khóa” hoặc “đã hủy”.
+>    - Luồng chủ sở hữu độc quyền được chỉ định bằng mũi tên từ nút CLH đến luồng tương ứng.
+>
+> Hình ảnh này giúp hiểu rõ hơn về cách AQS và CLH Queue hoạt động trong việc quản lý tài nguyên đồng thời.
+
+## 9. Các phương pháp và thuộc tính quan trọng hỗ trợ các tính năng AQS như sau:
+
+```java
+public abstract class AbstractQueuedSynchronizer 
+  extends AbstractOwnableSynchronizer implements java.io.Serializable {
+  	// CLH variant queue head and tail nodes
+    private transient volatile Node head;
+  	private transient volatile Node tail;
+  	// AQS sync status
+   	private volatile int state;
+  	// Update state using CAS method
+  	protected final boolean compareAndSetState(int expect, int update) {
+        return unsafe.compareAndSwapInt(this, stateOffset, expect, update);
+    }
+}
+```
+
+## 10. Queue CLH
+
+Vì queue CLH được sử dụng trong AQS, trước tiên hãy hiểu hàng đợi CLH là gì? CLH là một loại hàng đợi queue, Craig, Landin, Hagersten là hàng đợi được thực hiện bởi một danh sách liên kết đơn trong môi trường đa luồng. Luồng ứng dụng chỉ quay trên các biến cục bộ, nó liên tục thăm dò trạng thái của node tiền nhiệm, nếu phát hiện nút tiền thân đã nhả khoá thì nó sẽ kết thúc vòng quay.
+
+> CLH (Craig, Landin, and Hagersten) là một loại hàng đợi (queue) được thực hiện dưới dạng một danh sách liên kết đơn (single linked list) trong môi trường đa luồng. Được sử dụng chủ yếu trong các cơ chế đồng bộ hóa như AQS, CLH cung cấp một phương thức hiệu quả để quản lý việc truy cập vào tài nguyên được đồng bộ hóa. Dưới đây là một số chi tiết về cách CLH hoạt động:
+>
+> 1. **Kiến trúc hàng đợi**:
+>    - Mỗi luồng yêu cầu truy cập vào tài nguyên được đồng bộ hóa sẽ được biểu diễn bằng một nút (node) trong hàng đợi CLH.
+>    - Hàng đợi CLH được triển khai dưới dạng một danh sách liên kết đơn với mỗi nút chứa một tham chiếu đến nút tiền nhiệm (predecessor node).
+> 2. **Hoạt động của luồng yêu cầu**:
+>    - Khi một luồng yêu cầu truy cập vào tài nguyên, nó tạo một nút mới và thêm vào cuối hàng đợi CLH.
+>    - Sau đó, luồng yêu cầu sẽ tự quay vòng (spin) trên trạng thái của nút tiền nhiệm của mình để kiểm tra xem liệu nút tiền nhiệm đã giải phóng tài nguyên chưa hay không.
+>    - Luồng yêu cầu sẽ tiếp tục quay vòng cho đến khi nút tiền nhiệm của nó giải phóng tài nguyên, sau đó nó sẽ có thể tiếp tục và thực hiện truy cập vào tài nguyên.
+> 3. **Thực hiện tự quay vòng (spinning)**:
+>    - Tự quay vòng là quá trình luồng chờ đợi một sự kiện xảy ra mà không cần bị chặn hoặc bị ngủ (sleep).
+>    - Trong CLH, luồng yêu cầu sẽ tự quay vòng bằng cách liên tục kiểm tra trạng thái của nút tiền nhiệm của mình.
+>    - Nếu nút tiền nhiệm đã giải phóng tài nguyên, luồng yêu cầu có thể tiếp tục.
+>
+> Tóm lại, hàng đợi CLH cung cấp một cơ chế đơn giản và hiệu quả để quản lý truy cập vào tài nguyên được đồng bộ hóa trong môi trường đa luồng, nơi các luồng yêu cầu tự quay vòng trên trạng thái của nút tiền nhiệm để kiểm tra xem liệu tài nguyên đã sẵn sàng cho truy cập hay không.
+
+![](D:\MinhTran-Miscellenous\Repo-JavaGuide\Notes\Concurrency\imgs\2b770f93d4a04da8904b7d3c13fcc25b~tplv-k3u1fbpfcp-zoom-in-crop-mark_1512_0_0_0.webp)
+
+> Dựa trên những điểm mấu chốt về CLH Queue, chúng ta có thể kết luận những điều sau:
+>
+> 1. **CLH Queue là một hàng đợi (queue) đơn hướng**:
+>    - CLH Queue duy trì tính chất FIFO (First In First Out) của một hàng đợi, điều này có nghĩa là các yêu cầu được thêm vào trước sẽ được xử lý trước.
+> 2. **CLH Queue được xây dựng thông qua tail node**:
+>    - Hàng đợi CLH được xây dựng thông qua tail node, một tham chiếu atomics luôn chỉ đến nút cuối cùng trong hàng đợi. Tham chiếu này giúp giảm thời gian tìm kiếm nút cuối cùng khi thêm mới một yêu cầu vào hàng đợi.
+> 3. **Luồng chờ sẽ tự quay vòng thay vì chuyển đổi trạng thái**:
+>    - Trong CLH Queue, các luồng yêu cầu truy cập vào tài nguyên sẽ tự quay vòng (spin) trên trạng thái của nút tiền nhiệm thay vì chuyển đổi trạng thái của chính nó. Điều này giúp tránh được chi phí chuyển đổi trạng thái và giảm thiểu overhead khi thực hiện đồng bộ hóa.
+> 4. **Hiệu suất của CLH Queue không tốt khi có nhiều luồng chờ**:
+>    - Trong môi trường có độ cao cạnh tranh cao, hiệu suất của CLH Queue có thể bị ảnh hưởng do các luồng chờ không ngừng tự quay vòng và kiểm tra trạng thái của nút tiền nhiệm. Điều này có thể dẫn đến overhead lớn và giảm hiệu suất tổng thể.
+> 5. **AQS Queue là biến thể của CLH Queue**:
+>    - Trong AQS (AbstractQueuedSynchronizer), hàng đợi được sử dụng để quản lý các yêu cầu truy cập vào tài nguyên được đồng bộ hóa là biến thể của CLH Queue. Mỗi luồng yêu cầu truy cập vào tài nguyên được biểu diễn bởi một nút trong hàng đợi, giúp quản lý việc phân phối khóa một cách hiệu quả.
+
+> Từ mô tả của đoàn hệ CLH, có thể rút ra kết luận sau
+>
+> Hàng đợi CLH là danh sách liên kết một chiều duy trì các đặc điểm hàng đợi FIFO vào trước ra trước.
+> Xây dựng hàng đợi thông qua nút đuôi (tham chiếu nguyên tử), luôn trỏ đến nút cuối cùng
+> Các nút khóa không thu được sẽ quay thay vì chuyển trạng thái luồng.
+> Hiệu suất kém khi tính đồng thời cao, vì nút chưa nhận được khóa liên tục thăm dò trạng thái của nút tiền nhiệm để xem liệu nó có nhận được khóa hay không.
+>
+> Hàng đợi trong AQS là hàng đợi hai chiều ảo của biến thể CLH. Việc phân bổ khóa đạt được bằng cách đóng gói từng luồng yêu cầu tài nguyên được chia sẻ vào một nút.
+
+![](D:\MinhTran-Miscellenous\Repo-JavaGuide\Notes\Concurrency\imgs\0cf45df16b66457a93d1f69f96aeff38~tplv-k3u1fbpfcp-zoom-in-crop-mark_1512_0_0_0.webp)
+
+> 
+> So với hàng đợi CLH, hàng đợi chờ biến thể CLH trong AQS có các đặc điểm sau:
+>
+> 1. **Hàng đợi trong AQS là một danh sách liên kết hai chiều**:
+>    - Trong AQS, hàng đợi chờ được triển khai dưới dạng một danh sách liên kết hai chiều, giúp việc thêm và loại bỏ các yêu cầu truy cập vào tài nguyên được đồng bộ hóa trở nên hiệu quả.
+> 2. **Hàng đợi trong AQS duy trì tính chất FIFO**:
+>    - Như CLH Queue, hàng đợi trong AQS vẫn duy trì tính chất FIFO (First In First Out), tức là các yêu cầu được thêm vào trước sẽ được xử lý trước.
+> 3. **Sử dụng head và tail nodes**:
+>    - Trong AQS, hàng đợi chờ được hình thành từ hai nút (head và tail) giúp quản lý cả hai đầu của hàng đợi. Tham chiếu đến head và tail được đánh dấu bằng từ khóa `volatile` để đảm bảo tính nhất quán và hiệu suất trong môi trường đa luồng.
+> 4. **Thực hiện tự quay vòng và chuyển đổi sang chế độ chờ**:
+>    - Khi một luồng không thể lấy được trạng thái đồng bộ hóa, nó sẽ tự quay vòng và thử lại một số lần. Nếu tự quay vòng không thành công, luồng sẽ chuyển sang chế độ chờ, giúp giảm bớt overhead so với việc tự quay vòng không ngừng như trong CLH Queue.
+> 5. **Hiệu suất tốt hơn so với CLH Queue**:
+>    - Do sử dụng chế độ tự quay vòng và chuyển đổi sang chế độ chờ khi cần thiết, hàng đợi chờ biến thể CLH trong AQS có hiệu suất tốt hơn trong môi trường đa luồng cao cạnh tranh. Điều này giúp giảm bớt overhead và tăng cường hiệu suất tổng thể của hệ thống.
+
+## 11. AOS (Abstract Ownable Synchronizer)
+
+AOS (AbstractOwnableSynchronizer) là một lớp trừu tượng trong Java, được sử dụng để theo dõi và quản lý luồng đang sở hữu một khóa đồng bộ hóa (mutex lock) trong các cơ chế đồng bộ hóa như AQS (AbstractQueuedSynchronizer). Dưới đây là một số điểm quan trọng về AOS:
+
+1. **Thừa kế từ lớp trừu tượng**:
+   - AOS là một lớp trừu tượng, có nghĩa là nó không thể được khởi tạo trực tiếp mà chỉ có thể được thừa kế bởi các lớp con.
+2. **Chỉ chứa một biến Thread**:
+   - Trong AOS, có một biến của lớp Thread, thường được gọi là "exclusiveOwnerThread" hoặc tương tự, dùng để lưu trữ thông tin về luồng đang sở hữu khóa.
+3. **Phương thức để thiết lập và truy xuất luồng sở hữu**:
+   - AOS cung cấp các phương thức để thiết lập và truy xuất luồng đang sở hữu khóa. Thông thường, có phương thức để đặt luồng sở hữu (owner thread) và một phương thức để trả về luồng sở hữu hiện tại.
+4. **Quản lý luồng sở hữu của khóa đồng bộ**:
+   - Chức năng chính của AOS là ghi nhận và theo dõi luồng đang sở hữu một khóa đồng bộ hóa. Điều này hữu ích trong việc quản lý việc phân phối và giải phóng khóa một cách hiệu quả.
+
+Trong tổ chức của AQS, AOS thường được sử dụng để quản lý thông tin về luồng đang sở hữu khóa trong các cơ chế đồng bộ hóa như khóa đồng bộ hóa (mutex lock) trong Java.
+
+> Lớp trừu tượng AQS cũng kế thừa từ lớp trừu tượng AOS (AbstractOwnableSynchronizer) [ AQS extends AOS ]
+>
+> Chỉ có một biến loại Thread bên trong AOS, cung cấp các phương thức để lấy và thiết lập luồng khóa độc quyền hiện tại.
+>
+> Chức năng chính là ghi nhận phiên bản luồng hiện đang chiếm một khóa độc quyền (khóa mutex)
+
+```java
+public abstract class AbstractOwnableSynchronizer implements java.io.Serializable {
+    // Exclusive thread (does not participate in serialization)
+    private transient Thread exclusiveOwnerThread;
+    // Set the current exclusive thread
+    protected final void setExclusiveOwnerThread(Thread thread) {
+        exclusiveOwnerThread = thread;
+    }
+    // Returns the currently exclusive thread
+    protected final Thread getExclusiveOwnerThread() {
+        return exclusiveOwnerThread;
+    }
+}
+```
+
+Tại sao làm việc với AQS có thể phản ánh trình độ của coder, tức là làm chủ các công nghệ mà mọi người ít chú ý. Đây là lý do tại sao AQS thường xuất hiện trong các cuộc interview, bởi vì nó không hề đơn giản. Khi lần đầu tiếp xúc với ReentrantLock và AQS, tôi đã thấy mã nguồn hoàn toàn lộn xộn và việc debugging không hề dễ dàng, tôi cũng tin đây là phản ứng của hầu hết mọi người. 
